@@ -62,24 +62,42 @@ pip install -r requirements.txt
 
 ### 2. Environment Variables
 
-Create a `.env` file in the project root with the following variables:
+Create a `.env` file in the project root. Choose one of the templates below depending on the mode you want to run.
 
+Dev mode (SQLite):
 ```env
-# Database URLs
-DATABASE_URL=postgresql+asyncpg://user:pass@POOLED_HOST/db?sslmode=require
-DATABASE_URL_DIRECT=postgresql://user:pass@DIRECT_HOST/db?sslmode=require
-# Or use ALEMBIC_DATABASE_URL for Alembic migrations
-ALEMBIC_DATABASE_URL=postgresql://user:pass@DIRECT_HOST/db?sslmode=require
+# ----- Dev Mode (SQLite) -----
+DEV_MODE=true
+DEV_DATABASE_URL=sqlite+aiosqlite:///./dev.db
 
-# Application
-APP_SECRET=<dev secret>
-AUTH_PROVIDER=local  # or 'clerk' for production
+# Placeholder Postgres URL (not used when DEV_MODE=true)
+DATABASE_URL=postgresql+asyncpg://placeholder/placeholder
 
-# Development users (local auth mode only)
+# Auth & app
+AUTH_PROVIDER=local
+APP_SECRET=devsecret
+CORS_ORIGINS=*
+
+# Optional: local dev users for /api/v1/auth/dev/login
 # Format: "email:bcrypt_hash,email2:bcrypt_hash,..."
 DEV_USERS="admin@iris.local:$2b$...,supplier@iris.local:$2b$...,chef@iris.local:$2b$..."
+```
 
-# Clerk Authentication (production mode)
+Production/Staging (Postgres):
+```env
+# ----- Production / Staging (Postgres) -----
+DEV_MODE=false
+
+# Database URLs
+# DATABASE_URL: pooled (PgBouncer) used by the running app
+DATABASE_URL=postgresql+asyncpg://user:pass@POOLED_HOST/db?sslmode=require
+# DATABASE_URL_DIRECT: direct connection for Alembic if ALEMBIC_DATABASE_URL is not set
+DATABASE_URL_DIRECT=postgresql://user:pass@DIRECT_HOST/db?sslmode=require
+# ALEMBIC_DATABASE_URL: preferred direct connection for Alembic migrations
+ALEMBIC_DATABASE_URL=postgresql://user:pass@DIRECT_HOST/db?sslmode=require
+
+# Auth
+AUTH_PROVIDER=clerk
 CLERK_API_KEY=your_clerk_api_key
 
 # Stripe (test mode)
@@ -112,6 +130,41 @@ The API will be available at:
 - **API**: http://localhost:8000
 - **Docs**: http://localhost:8000/docs
 - **OpenAPI**: http://localhost:8000/openapi.json
+
+## Running Modes
+
+### Dev Mode (SQLite)
+
+1. Ensure you created a virtual environment and installed dependencies (see sections above).
+2. Create `.env` using the Dev Mode (SQLite) template.
+3. Seed demo data:
+   ```bash
+   python app/seed.py
+   ```
+4. Start the API:
+   ```bash
+   uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+   ```
+5. Test dev-only endpoints (no auth when `DEV_MODE=true`):
+   - `GET /api/invoices`
+   - `GET /api/summary`
+   - `POST /api/pay-all`
+
+Notes:
+- Dev endpoints are mounted only when `DEV_MODE=true`.
+- SQLite DB file is `dev.db` in the project root; delete it to reset.
+
+### Production-like (Postgres)
+
+1. Create `.env` using the Production/Postgres template (`DEV_MODE=false`).
+2. Apply migrations with the direct connection:
+   ```bash
+   ALEMBIC_DATABASE_URL=$ALEMBIC_DATABASE_URL alembic upgrade head
+   ```
+3. Start the API (dev endpoints are NOT mounted):
+   ```bash
+   uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+   ```
 
 ## Project Structure
 
