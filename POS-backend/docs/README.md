@@ -7,8 +7,8 @@ This README describes how to propose and ship changes to the Iris backend and fr
 ## 0) Source of Truth
 
 - **Backend_PDR.md** — Product Development Requirements (feature and schema specifications).
-- **backend/** — FastAPI project (routers, services, repos, schemas, Alembic migrations).
-- **frontend/** — Next.js project (UI + API integration).
+- **POS-backend/** — FastAPI project (routers, services, repos, schemas, Alembic migrations).
+- **Iris-Frontend/** — Next.js project (UI + API integration).
 - **README.md (this file)** — Process rules and Cursor automation instructions.
 
 If **README.md** or **Backend_PDR.md** changes, **Cursor must treat those edits as authoritative** and reconcile the codebase (models, endpoints, jobs, tests, docs).
@@ -78,7 +78,7 @@ Cursor must annotate code with short comments linking changes to PDR sections.
 ## 3) Project Structure
 
 ```
-backend/
+POS-backend/
   app/
     api/v1/
     core/          # config, security, errors, tasks
@@ -97,7 +97,7 @@ Each domain follows **Router → Service → Repository → Schemas** (SOLID).
 ## 4) Alembic Migrations
 
 **Purpose:** Version-controlled schema changes.  
-**Run inside:** `backend` folder.
+**Run inside:** `POS-backend` folder.
 
 **Typical workflow:**
 ```bash
@@ -140,30 +140,43 @@ Cursor must include docstrings describing what each metric measures.
 
 ---
 
-## 7) Environment Variables
+## 7) .env Configuration Reference
 
+This project uses environment variables for Dev Mode (SQLite) and Production (Neon/Postgres).
+
+- **DEV_MODE**: Enable developer-only features and guards. Required for `scripts/seed_dev.py`.
+- **DEV_DATABASE_URL**: SQLite DSN for Dev Mode (default `sqlite+aiosqlite:///./dev.db`). The file is created at `POS-backend/dev.db`.
+- **DATABASE_URL**: Pooled Neon async DSN used by the running app in production.
+- **DATABASE_URL_DIRECT**: Direct Neon DSN for Alembic (DDL operations).
+- **ALEMBIC_DATABASE_URL**: Preferred direct DSN for Alembic; overrides `DATABASE_URL_DIRECT` if set.
+- **AUTH_PROVIDER, APP_SECRET, DEV_USERS**: Auth configuration. `AUTH_PROVIDER=local` for hackathon; `APP_SECRET` signs local JWTs; `DEV_USERS` is `email:hashedpassword` pairs for dev login.
+- **STRIPE_SECRET_KEY, STRIPE_PUBLISHABLE_KEY**: Stripe test keys used during hackathon.
+- **REDIS_URL**: Optional; Celery broker/result backend.
+
+Copy-paste `.env.example`:
+
+```env
+# DEV MODE
+DEV_MODE=true
+DEV_DATABASE_URL=sqlite+aiosqlite:///./dev.db
+
+# POSTGRES (PRODUCTION)
+DATABASE_URL=
+DATABASE_URL_DIRECT=
+ALEMBIC_DATABASE_URL=
+
+# AUTH
+AUTH_PROVIDER=local
+APP_SECRET=
+DEV_USERS="email:hashedpassword"
+
+# STRIPE TEST (for hackathon)
+STRIPE_SECRET_KEY=
+STRIPE_PUBLISHABLE_KEY=
+
+# OTHER OPTIONAL VARS
+REDIS_URL=
 ```
-# DATABASE_URL: Neon Pooled URI (used by the running app).
-DATABASE_URL=postgresql+asyncpg://user:pass@POOLED_HOST/db?sslmode=require
-
-# DATABASE_URL_DIRECT: Neon Direct URI (used by Alembic for schema migrations).
-DATABASE_URL_DIRECT=postgresql://user:pass@DIRECT_HOST/db?sslmode=require
-
-# REDIS_URL: Celery broker and result backend.
-REDIS_URL=redis://:password@host:6379/0
-
-# STRIPE_SECRET_KEY / STRIPE_PUBLISHABLE_KEY: Stripe Connect credentials.
-STRIPE_SECRET_KEY=sk_test_...
-STRIPE_PUBLISHABLE_KEY=pk_test_...
-
-# CLERK_API_KEY: Authentication provider key.
-CLERK_API_KEY=...
-
-# FIREBASE_KEY: Push notifications.
-FIREBASE_KEY=...
-```
-
-Cursor must keep inline explanations when scaffolding configs.
 
 ---
 
@@ -210,86 +223,84 @@ Cursor should explain these policies inline in generated code.
 
 ---
 
-## Local Development (Dev Mode)
+## How to Launch the Project in Developer Mode (SQLite Dev Mode)
 
- Run the backend against a local SQLite DB with demo data. This mode also mounts dev-only endpoints.
+ Minimal steps to run backend + frontend locally using SQLite.
 
- - **Working directory:** `POS-backend/`
+ - **Backend working directory:** `MVP_local-backend-frontend_Hackathon/POS-backend`
+ - **SQLite file location:** `POS-backend/dev.db`
  - **Python:** 3.11+
 
- 1) Create env and install deps
- ```bash
- python -m venv .venv
- # Windows PowerShell
- .\.venv\Scripts\Activate.ps1
- # macOS/Linux
- source .venv/bin/activate
- pip install -r requirements.txt
- ```
+ 1) Create and activate virtualenv, install dependencies
+```bash
+python -m venv .venv
+# Windows PowerShell
+.\.venv\Scripts\Activate.ps1
+# macOS/Linux
+source .venv/bin/activate
+pip install -r requirements.txt
+```
 
- 2) Create `.env`
- ```env
- # Dev Mode (SQLite)
- DEV_MODE=true
- DEV_DATABASE_URL=sqlite+aiosqlite:///./dev.db
+ 2) Set Dev Mode environment
+```bash
+export DEV_MODE=true
+# optional: set SQLite DSN (default creates POS-backend/dev.db)
+export DEV_DATABASE_URL=sqlite+aiosqlite:///./dev.db
+```
 
- # Placeholder Postgres URL (unused in dev mode)
- DATABASE_URL=postgresql+asyncpg://placeholder/placeholder
+ 3) Seed the dev database
+```bash
+python scripts/seed_dev.py
+```
 
- # Auth & app
- AUTH_PROVIDER=local
- APP_SECRET=devsecret
- CORS_ORIGINS=*
- ```
+ 4) Start the FastAPI server
+```bash
+uvicorn app.main:app --reload --port 8000
+```
 
- 3) Seed demo data
- ```bash
- python app/seed.py
- ```
-
- 4) Run API
- ```bash
- uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
- ```
-
- 5) Dev-only endpoints (mounted only when `DEV_MODE=true`)
- - `GET /api/invoices`
- - `GET /api/summary`
- - `POST /api/pay-all`
+ 5) Launch the frontend against the dev backend
+```bash
+cd Iris-Frontend
+export NEXT_PUBLIC_API_URL=http://localhost:8000
+npm install
+npm run dev
+```
 
  Notes:
- - The SQLite file `dev.db` is created in `POS-backend/`. Delete it to reset the database.
+ - `dev.db` is created at `POS-backend/dev.db`. Delete it to reset the local database.
  - If you prefer not to activate the virtualenv, on Windows you can prefix commands with `..\.venv\Scripts\python.exe -m` when running from the project root.
 
 ---
 
-## Production-like (Postgres)
+## Production Mode (Neon/Postgres)
 
- Use Postgres and disable dev-only endpoints.
+ Use Neon/Postgres. Do NOT set `DEV_MODE`.
 
- 1) `.env` template
- ```env
- DEV_MODE=false
+ 1) .env with required Postgres URLs
+```env
+DATABASE_URL=postgresql+asyncpg://user:pass@POOLED_HOST/db?sslmode=require
+DATABASE_URL_DIRECT=postgresql://user:pass@DIRECT_HOST/db?sslmode=require
+ALEMBIC_DATABASE_URL=postgresql://user:pass@DIRECT_HOST/db?sslmode=require
+```
 
- # Database URLs
- DATABASE_URL=postgresql+asyncpg://user:pass@POOLED_HOST/db?sslmode=require
- DATABASE_URL_DIRECT=postgresql://user:pass@DIRECT_HOST/db?sslmode=require
- ALEMBIC_DATABASE_URL=postgresql://user:pass@DIRECT_HOST/db?sslmode=require
+ 2) Run Alembic migrations
+```bash
+alembic upgrade head
+```
 
- # Auth
- AUTH_PROVIDER=clerk
- CLERK_API_KEY=your_clerk_api_key
- ```
+ 3) Run API (production settings)
+```bash
+# uvicorn
+uvicorn app.main:app --host 0.0.0.0 --port 8000
+# or gunicorn
+gunicorn -k uvicorn.workers.UvicornWorker app.main:app --workers 2 --bind 0.0.0.0:8000
+```
 
- 2) Apply migrations
- ```bash
- ALEMBIC_DATABASE_URL=$ALEMBIC_DATABASE_URL alembic upgrade head
- ```
-
- 3) Run API
- ```bash
- uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
- ```
+## Frontend in production mode
+Set the frontend API base URL:
+```bash
+NEXT_PUBLIC_API_URL=https://your-api-url.com
+```
 
 ---
 

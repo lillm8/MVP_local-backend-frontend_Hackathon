@@ -21,6 +21,7 @@ from app.db.base import Base
 from app.domain.users.models import User, UserRole
 from app.domain.restaurants.models import Restaurant
 from app.domain.suppliers.models import Supplier
+from app.domain.products.models import Product
 from app.domain.carts.models import Cart, CartStatus
 from app.domain.orders.models import Order, OrderStatus, PaymentMethod
 

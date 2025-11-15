@@ -3,8 +3,8 @@ from datetime import datetime
 from typing import Optional
 from uuid import UUID
 
-from sqlalchemy import ForeignKey, Index, String
-from sqlalchemy.dialects.postgresql import JSONB, UUID as PGUUID
+from sqlalchemy import ForeignKey, Index, String, JSON
+from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import BaseModel
@@ -25,9 +25,9 @@ class Restaurant(BaseModel):
     contact_email: Mapped[str] = mapped_column(String(255), nullable=False)
     city: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     
-    # Delivery preferences (JSONB for flexibility)
+    # Delivery preferences (JSON/JSONB for flexibility)
     # Example: {"min_order_value": 500.00, "delivery_days": ["monday", "wednesday", "friday"]}
-    delivery_prefs: Mapped[Optional[dict]] = mapped_column(JSONB, nullable=True)
+    delivery_prefs: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
     
     # Status
     active: Mapped[bool] = mapped_column(default=True, index=True)

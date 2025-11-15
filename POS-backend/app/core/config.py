@@ -15,6 +15,10 @@ class Settings(BaseSettings):
     # ALEMBIC_DATABASE_URL: Preferred direct connection for Alembic (takes precedence over DATABASE_URL_DIRECT)
     ALEMBIC_DATABASE_URL: str | None = None
     
+    # Development
+    DEV_MODE: bool = False
+    DEV_DATABASE_URL: str | None = None
+    
     # Authentication
     AUTH_PROVIDER: str = "local"  # "local" or "clerk"
     APP_SECRET: str | None = None  # Secret key for local JWT signing (HS256)

@@ -3,8 +3,8 @@ from datetime import datetime
 from typing import Optional, TYPE_CHECKING
 from decimal import Decimal
 
-from sqlalchemy import String, Text, Index, ForeignKey, Numeric
-from sqlalchemy.dialects.postgresql import ARRAY, UUID
+from sqlalchemy import String, Text, Index, ForeignKey, Numeric, JSON
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from app.db.base import BaseModel
@@ -39,7 +39,7 @@ class SupplierConnection(BaseModel):
     status: Mapped[str] = mapped_column(String(50), nullable=False, default="active", index=True)
     
     # Scopes granted: ["catalog", "pricing", "orders"]
-    scopes: Mapped[list[str]] = mapped_column(ARRAY(String), nullable=False, default=list)
+    scopes: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
     
     # Last successful sync timestamp
     last_sync_at: Mapped[Optional[datetime]] = mapped_column(
