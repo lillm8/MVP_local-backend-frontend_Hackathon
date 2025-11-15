@@ -1,0 +1,387 @@
+# Preliminary Design Review (PDR) - Iris Marketplace Frontend
+
+## 1. Overview
+
+The Iris marketplace frontend serves as the primary interface connecting restaurants and suppliers in a B2B marketplace ecosystem. The frontend enables restaurants to discover products, compare prices, manage orders, view supplier performance metrics, and automate repeat purchases. Simultaneously, it provides suppliers with comprehensive tools to list products, manage inventory, fulfill orders, and track business performance.
+
+The frontend acts as the user-facing layer that translates complex backend business logic into intuitive, accessible interfaces that drive marketplace engagement and transaction efficiency.
+
+## 2. Core Objectives
+
+- **User Experience Excellence**: Provide a seamless, fast, and intuitive experience for both restaurants and suppliers with minimal learning curve
+- **Transparency and Trust**: Enable complete transparency across product catalogs, pricing structures, delivery timelines, and supplier performance metrics
+- **Backend Integration**: Integrate tightly with backend APIs and event systems to ensure real-time data synchronization and consistent state management
+- **Scalability**: Ensure architecture supports future features including AI-powered forecasting, dynamic pricing insights, and advanced analytics
+- **Performance Standards**: Maintain high performance and accessibility standards (WCAG 2.1 compliance) across all devices and network conditions
+
+## 3. Architecture Overview
+
+### Technology Stack
+
+- **Framework**: Next.js 14 with App Router for optimal performance and SEO
+- **Language**: TypeScript for type safety and developer experience
+- **Styling/UI**: TailwindCSS with shadcn/ui component library for consistent design system
+- **Authentication**: Clerk for secure user management and role-based access control
+- **State Management**: React Query (TanStack Query) for server state management and caching
+- **Deployment**: Vercel for seamless CI/CD and global edge deployment
+- **Error Tracking**: Sentry for comprehensive error monitoring and debugging
+- **Analytics**: PostHog for user behavior analytics and product insights
+- **AI Integration**: Google Gemini API for future AI-powered insights and recommendations
+
+### Data Architecture
+
+All data is retrieved via REST and GraphQL endpoints exposed by the FastAPI backend. The frontend implements a clean separation between data fetching, business logic, and presentation layers to ensure maintainability and testability.
+
+## 4. Application Structure
+
+```
+src/
+  app/                    # Next.js App Router routes and layouts
+    (auth)/              # Authentication routes
+    (dashboard)/         # Protected dashboard routes
+    api/                 # API route handlers
+    globals.css          # Global styles
+    layout.tsx           # Root layout
+    page.tsx             # Home page
+  components/            # Reusable UI components
+    ui/                  # shadcn/ui base components
+    features/            # Feature-specific components
+      products/          # Product browsing and management
+      orders/            # Order management and tracking
+      suppliers/         # Supplier discovery and profiles
+      integrations/      # Third-party integrations
+    layout/              # Layout components (headers, sidebars, footers)
+    forms/               # Form components and validation
+  hooks/                 # Custom React hooks
+    useAuth.ts           # Authentication hooks
+    useCart.ts           # Shopping cart management
+    useOrders.ts         # Order management hooks
+    useProducts.ts       # Product data hooks
+  services/              # API and business logic layer
+    repositories/        # Data access layer
+      productRepository.ts
+      orderRepository.ts
+      supplierRepository.ts
+    api/                 # API client configuration
+      client.ts          # Axios/fetch configuration
+      endpoints.ts       # API endpoint definitions
+  contexts/              # Global React contexts
+    AuthContext.tsx      # Authentication state
+    CartContext.tsx      # Shopping cart state
+    ThemeContext.tsx     # Theme management
+  utils/                 # Helper functions and utilities
+    constants.ts         # Application constants
+    formatters.ts        # Data formatting utilities
+    validators.ts        # Input validation functions
+  types/                 # TypeScript type definitions
+    api.ts               # API response types
+    entities.ts          # Domain entity types
+    components.ts        # Component prop types
+  lib/                   # Third-party library configurations
+    auth.ts              # Clerk configuration
+    query.ts             # React Query configuration
+    analytics.ts         # PostHog configuration
+```
+
+### Feature Structure Pattern
+
+Each feature follows a consistent structure based on **Page → Hook → Service → Repository → Component**:
+
+- **Page**: Next.js page component handling routing and layout
+- **Hook**: Custom React hook managing component state and side effects
+- **Service**: Business logic layer handling data transformation and validation
+- **Repository**: Data access layer managing API calls and caching
+- **Component**: Presentational components for UI rendering
+
+This pattern ensures consistency with backend domain boundaries and promotes code reusability.
+
+## 5. UI and Design System
+
+### Design Principles
+
+- **TailwindCSS Utility-First**: Leverage TailwindCSS for consistent, maintainable styling
+- **shadcn/ui Components**: Use shadcn/ui as the foundation for all UI components
+- **Design Tokens**: Define reusable design tokens for colors, spacing, typography, and breakpoints
+- **Accessibility**: Ensure WCAG 2.1 AA compliance across all components and interactions
+- **Atomic Design**: Follow atomic design principles (atoms → molecules → organisms → templates → pages)
+- **Mobile-First**: Implement responsive design with mobile-first approach and optimized asset loading
+
+### Component Architecture
+
+```typescript
+// Example component structure
+interface ProductCardProps {
+  product: Product;
+  onAddToCart: (productId: string) => void;
+  onViewDetails: (productId: string) => void;
+}
+
+const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, onViewDetails }) => {
+  // Component implementation
+};
+```
+
+## 6. Data Flow and State Management
+
+### State Management Strategy
+
+- **Server State**: React Query for all API interactions, caching, background refetching, and optimistic updates
+- **Global State**: React Context for authentication, shopping cart, and user preferences
+- **Local State**: React useState/useReducer for UI interactions and form state only
+- **Type Safety**: Strict TypeScript interfaces for all data types and API contracts
+
+### Data Flow Pattern
+
+```typescript
+// Example data flow
+const useProducts = () => {
+  return useQuery({
+    queryKey: ['products'],
+    queryFn: () => productRepository.getAll(),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+};
+```
+
+### Backend Integration
+
+- Map backend DTOs to frontend models using transformation functions
+- Implement optimistic updates for better user experience
+- Handle real-time updates through WebSocket connections or polling
+- Maintain data consistency across different views and components
+
+## 7. API Integration
+
+### API Architecture
+
+- **Centralized Configuration**: All API endpoints defined in `services/api/endpoints.ts`
+- **Environment Variables**: Use environment variables for base URLs and authentication tokens
+- **Authentication**: Include Clerk JWT tokens in all authenticated requests
+- **Error Handling**: Implement consistent error handling using standardized response shapes
+- **Retry Logic**: Implement exponential backoff for transient errors
+
+### API Documentation Standards
+
+```typescript
+/**
+ * Fetches a list of products with optional filtering
+ * @param filters - Optional product filters (category, supplier, price range)
+ * @returns Promise<Product[]> - Array of products matching the filters
+ * @endpoint GET /api/v1/products
+ */
+export const getProducts = async (filters?: ProductFilters): Promise<Product[]> => {
+  // Implementation
+};
+```
+
+## 8. Error Handling and Loading States
+
+### Error Handling Strategy
+
+- **Global Error Boundary**: Implement React Error Boundary with Sentry integration
+- **Consistent UI States**: Display standardized loading, empty, error, and success states
+- **Graceful Degradation**: Provide fallbacks for offline mode or failed API calls
+- **User Feedback**: Show meaningful error messages and recovery options
+
+### Loading State Components
+
+```typescript
+// Example loading state component
+const ProductListSkeleton = () => (
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    {Array.from({ length: 6 }).map((_, i) => (
+      <ProductCardSkeleton key={i} />
+    ))}
+  </div>
+);
+```
+
+## 9. Routing and Navigation
+
+### Next.js App Router Implementation
+
+- **Nested Layouts**: Use Next.js App Router with nested layouts for consistent UI structure
+- **Protected Routes**: Implement role-based route protection using Clerk middleware
+- **URL Conventions**: Apply RESTful URL patterns reflecting resource hierarchy
+
+### Route Structure
+
+```
+/                           # Public home page
+/auth/                      # Authentication pages
+  /login
+  /register
+  /forgot-password
+/dashboard/                 # Protected dashboard
+  /products                 # Product catalog
+  /orders                   # Order management
+  /suppliers                # Supplier directory
+  /profile                  # User profile
+  /settings                 # User settings
+/restaurants/[id]/orders    # Restaurant-specific order view
+/suppliers/[id]/products    # Supplier product catalog
+```
+
+## 10. Performance and Optimization
+
+### Performance Targets
+
+- **Core Web Vitals**: LCP < 2.5s, FID < 100ms, CLS < 0.1
+- **Lighthouse Score**: 90+ across all categories
+- **Bundle Size**: Optimize JavaScript bundle size and implement code splitting
+
+### Optimization Strategies
+
+- **Static Optimization**: Use Next.js automatic static optimization where possible
+- **Lazy Loading**: Implement lazy loading for non-critical components and routes
+- **Caching**: Leverage React Query caching and prefetching strategies
+- **Asset Optimization**: Optimize images, fonts, and other static assets
+- **Code Splitting**: Implement route-based and component-based code splitting
+
+## 11. Testing Strategy
+
+### Testing Pyramid
+
+- **Unit Tests**: Jest and React Testing Library for component and utility function testing
+- **Integration Tests**: Test complete user flows and API integration
+- **E2E Tests**: Playwright for end-to-end testing of critical user journeys
+
+### Test Coverage Requirements
+
+- **Core Flows**: 90%+ coverage for login, product browsing, cart management, checkout, and supplier dashboard
+- **Component Tests**: Test all reusable components with various prop combinations
+- **API Integration**: Test all API calls with mock responses and error scenarios
+
+### Testing Tools
+
+```json
+{
+  "devDependencies": {
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/jest-dom": "^5.16.5",
+    "jest": "^29.5.0",
+    "playwright": "^1.40.0"
+  }
+}
+```
+
+## 12. Environment Variables
+
+### Required Environment Variables
+
+```bash
+# API Configuration
+NEXT_PUBLIC_API_URL=https://api.iris.market
+NEXT_PUBLIC_GRAPHQL_URL=https://api.iris.market/graphql
+
+# Authentication
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+CLERK_SECRET_KEY=sk_test_...
+
+# Payment Processing
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
+STRIPE_SECRET_KEY=sk_test_...
+
+# Analytics and Monitoring
+NEXT_PUBLIC_POSTHOG_KEY=phc_...
+SENTRY_DSN=https://...
+
+# AI Integration
+NEXT_PUBLIC_GEMINI_API_KEY=...
+
+# Feature Flags
+NEXT_PUBLIC_ENABLE_AI_FEATURES=false
+NEXT_PUBLIC_ENABLE_ANALYTICS=true
+```
+
+### Security Considerations
+
+- Never expose sensitive keys in client-side code
+- Use environment variable validation at build time
+- Implement proper CORS configuration
+- Regular security audits of environment variable usage
+
+## 13. Deployment and CI/CD
+
+### Vercel Deployment
+
+- **Automatic Deployments**: Deploy from main branch automatically
+- **Preview Builds**: Generate preview deployments for feature branches
+- **Environment Management**: Configure environment variables via Vercel dashboard
+- **Edge Functions**: Utilize Vercel Edge Functions for serverless API routes
+
+### CI/CD Pipeline
+
+```yaml
+# Example GitHub Actions workflow
+name: Deploy
+on:
+  push:
+    branches: [main]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install dependencies
+        run: npm ci
+      - name: Run tests
+        run: npm test
+      - name: Run Lighthouse checks
+        run: npm run lighthouse
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v20
+```
+
+## 14. Security and Compliance
+
+### Authentication Security
+
+- **Clerk Integration**: Implement Clerk authentication with JWT validation
+- **Role-Based Access**: Enforce role-based access control for all protected routes
+- **Session Management**: Implement secure session management and token refresh
+
+### Data Protection
+
+- **No Sensitive Data**: Ensure no sensitive data is logged on the client side
+- **HTTPS Enforcement**: Enforce HTTPS for all communications
+- **CSP Headers**: Configure Content Security Policy headers
+- **Storage Audit**: Regular audit of frontend storage for tokens and sensitive data
+
+### Compliance
+
+- **GDPR Compliance**: Implement proper consent management and data handling
+- **Accessibility**: Ensure WCAG 2.1 AA compliance
+- **Security Headers**: Implement comprehensive security headers
+
+## 15. Monitoring and Analytics
+
+### Error Tracking
+
+- **Sentry Integration**: Comprehensive error tracking and performance monitoring
+- **Error Boundaries**: Implement React Error Boundaries with Sentry reporting
+- **Performance Monitoring**: Track Core Web Vitals and custom performance metrics
+
+### Analytics
+
+- **PostHog Integration**: User behavior analytics and feature flag management
+- **Custom Events**: Track business-critical events (purchases, supplier interactions)
+- **Performance Metrics**: Monitor TTFB, FCP, LCP, and other performance indicators
+
+### Privacy Compliance
+
+- **Consent Management**: Implement proper consent management for analytics
+- **Data Minimization**: Collect only necessary data for analytics
+- **GDPR Compliance**: Ensure all monitoring respects user privacy preferences
+
+## 16. Outcome
+
+The Iris marketplace frontend will be a production-ready, modular, and type-safe application that seamlessly integrates with the Iris backend architecture. The frontend will provide:
+
+- **Scalable Architecture**: Easily extensible for new modules like AI-powered forecasting and dynamic pricing insights
+- **Type Safety**: Comprehensive TypeScript implementation ensuring reliability and developer experience
+- **Performance Excellence**: Optimized for speed, accessibility, and user experience
+- **Maintainability**: Clean code architecture following industry best practices
+- **Future-Proof Design**: Ready for advanced features including AI integration, real-time collaboration, and advanced analytics
+
+The frontend will serve as the primary interface driving marketplace engagement, enabling efficient B2B transactions, and providing the foundation for future innovation in the Iris ecosystem.
