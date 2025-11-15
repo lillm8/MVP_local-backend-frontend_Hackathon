@@ -208,9 +208,94 @@ Cursor should explain these policies inline in generated code.
 - **Pagination:** Offset/limit approach (default: 50 items, max: 100)
 - **Filtering/Sorting:** TODO - Document query parameter format once finalized
 
+---
+
+## Local Development (Dev Mode)
+
+ Run the backend against a local SQLite DB with demo data. This mode also mounts dev-only endpoints.
+
+ - **Working directory:** `POS-backend/`
+ - **Python:** 3.11+
+
+ 1) Create env and install deps
+ ```bash
+ python -m venv .venv
+ # Windows PowerShell
+ .\.venv\Scripts\Activate.ps1
+ # macOS/Linux
+ source .venv/bin/activate
+ pip install -r requirements.txt
+ ```
+
+ 2) Create `.env`
+ ```env
+ # Dev Mode (SQLite)
+ DEV_MODE=true
+ DEV_DATABASE_URL=sqlite+aiosqlite:///./dev.db
+
+ # Placeholder Postgres URL (unused in dev mode)
+ DATABASE_URL=postgresql+asyncpg://placeholder/placeholder
+
+ # Auth & app
+ AUTH_PROVIDER=local
+ APP_SECRET=devsecret
+ CORS_ORIGINS=*
+ ```
+
+ 3) Seed demo data
+ ```bash
+ python app/seed.py
+ ```
+
+ 4) Run API
+ ```bash
+ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+ ```
+
+ 5) Dev-only endpoints (mounted only when `DEV_MODE=true`)
+ - `GET /api/invoices`
+ - `GET /api/summary`
+ - `POST /api/pay-all`
+
+ Notes:
+ - The SQLite file `dev.db` is created in `POS-backend/`. Delete it to reset the database.
+ - If you prefer not to activate the virtualenv, on Windows you can prefix commands with `..\.venv\Scripts\python.exe -m` when running from the project root.
+
+---
+
+## Production-like (Postgres)
+
+ Use Postgres and disable dev-only endpoints.
+
+ 1) `.env` template
+ ```env
+ DEV_MODE=false
+
+ # Database URLs
+ DATABASE_URL=postgresql+asyncpg://user:pass@POOLED_HOST/db?sslmode=require
+ DATABASE_URL_DIRECT=postgresql://user:pass@DIRECT_HOST/db?sslmode=require
+ ALEMBIC_DATABASE_URL=postgresql://user:pass@DIRECT_HOST/db?sslmode=require
+
+ # Auth
+ AUTH_PROVIDER=clerk
+ CLERK_API_KEY=your_clerk_api_key
+ ```
+
+ 2) Apply migrations
+ ```bash
+ ALEMBIC_DATABASE_URL=$ALEMBIC_DATABASE_URL alembic upgrade head
+ ```
+
+ 3) Run API
+ ```bash
+ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+ ```
+
+---
+
 ## 12) Final Notes
 
 If this README or PDR changes, **Cursor must synchronize the codebase**:  
 - Update affected models, routers, and tasks.  
 - Regenerate migrations.  
-- Adjust tests and metrics.  
+- Adjust tests and metrics.
