@@ -1,0 +1,89 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "es6"
+    ],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "baseUrl": "src",
+    "paths": {
+      // New non-prefixed aliases
+      "app/*": [
+        "app/*"
+      ],
+      "types/*": [
+        "types/*"
+      ],
+      "lib/*": [
+        "lib/*"
+      ],
+      "contexts/*": [
+        "contexts/*"
+      ],
+      "hooks/*": [
+        "hooks/*"
+      ],
+      "components/*": [
+        "components/*"
+      ],
+      "utils/*": [
+        "utils/*"
+      ],
+      "constants/*": [
+        "constants/*"
+      ],
+      // Preserve existing @-prefixed aliases for transition
+      "@/*": [
+        "./*"
+      ],
+      "@app/*": [
+        "app/*"
+      ],
+      "@components/*": [
+        "components/*"
+      ],
+      "@hooks/*": [
+        "hooks/*"
+      ],
+      "@contexts/*": [
+        "contexts/*"
+      ],
+      "@types/*": [
+        "types/*"
+      ],
+      "@lib/*": [
+        "lib/*"
+      ]
+    }
+  },
+  "include": [
+    "next-env.d.ts",
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "tests",
+    "tests/**",
+    "src/tests",
+    "src/tests/**"
+  ]
+}

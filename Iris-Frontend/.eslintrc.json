@@ -1,0 +1,50 @@
+{
+  "root": true,
+  "extends": ["next", "next/core-web-vitals"],
+  "plugins": ["import"],
+  "settings": {
+    "import/resolver": {
+      "typescript": {
+        "project": "./tsconfig.json"
+      }
+    }
+  },
+  "rules": {
+    "import/no-restricted-paths": [
+      "error",
+      {
+        "zones": [
+          {
+            "target": "src/types",
+            "from": ["src/app", "src/components", "src/hooks", "src/contexts", "src/lib"],
+            "message": "Domain layer (types) must not import from presentation/application/infrastructure."
+          },
+          {
+            "target": "src/lib",
+            "from": ["src/app", "src/components", "src/hooks", "src/contexts"],
+            "message": "Infrastructure (lib) must not depend on presentation or application layers."
+    },
+    {
+            "target": ["src/hooks", "src/contexts"],
+            "from": ["src/app", "src/components"],
+            "message": "Application (hooks/contexts) must not import from presentation (app/components)."
+          },
+          {
+            "target": ["src/app", "src/components"],
+            "from": ["src/lib"],
+            "message": "Presentation (app/components) must not import infrastructure (lib) directly. Use application hooks/services."
+          }
+        ]
+      }
+    ],
+    "react/no-unescaped-entities": "off"
+  },
+  "overrides": [
+    {
+      "files": ["src/hooks/view-models/**/*.{ts,tsx}"],
+      "rules": {
+        "react-hooks/rules-of-hooks": "off"
+      }
+    }
+  ]
+}

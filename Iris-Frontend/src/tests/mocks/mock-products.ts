@@ -1,0 +1,118 @@
+import { Product, ProductCategory } from '@/types';
+
+// Mock products data
+export const MOCK_PRODUCTS: Product[] = [
+  {
+    id: '1',
+    name: 'Heirloom Tomatoes',
+    description:
+      'Sweet and juicy heirloom tomatoes, perfect for salads and cooking',
+    category: ProductCategory.PRODUCE,
+    price: 4.5,
+    unit: 'kg',
+    image:
+      'https://images.unsplash.com/photo-1591171551239-80a5eddd627a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0b21hdG9lcyUyMGZyZXNoJTIwbWFya2V0fGVufDF8fHx8MTc2MTMwNzMzOXww&ixlib=rb-4.1.0&q=80&w=1080',
+    supplierId: '1',
+    supplierName: 'Green Valley Farm',
+    isAvailable: true,
+    stockQuantity: 100,
+    minimumOrderQuantity: 1,
+    tags: ['Organic', 'Local', 'Seasonal'],
+    createdAt: '2023-01-15T08:00:00Z',
+    updatedAt: '2024-01-15T10:30:00Z',
+  },
+  {
+    id: '2',
+    name: 'Fresh Milk',
+    description: 'Creamy whole milk from grass-fed cows',
+    category: ProductCategory.DAIRY,
+    price: 3.25,
+    unit: 'liter',
+    image:
+      'https://images.unsplash.com/photo-1550583724-b2692b85b150?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxmcmVzaCUyMG1pbGt8ZW58MXx8fHwxNzYxMzA3MzQzfDA&ixlib=rb-4.1.0&q=80&w=1080',
+    supplierId: '2',
+    supplierName: 'Sunrise Dairy Co.',
+    isAvailable: true,
+    stockQuantity: 200,
+    minimumOrderQuantity: 2,
+    tags: ['Fresh', 'Local', 'Grass-fed'],
+    createdAt: '2023-02-20T09:15:00Z',
+    updatedAt: '2024-01-20T11:45:00Z',
+  },
+  {
+    id: '3',
+    name: 'Grass-Fed Beef Steak',
+    description: 'Premium cut of grass-fed beef, perfect for grilling',
+    category: ProductCategory.MEAT,
+    price: 18.99,
+    unit: 'kg',
+    image:
+      'https://images.unsplash.com/photo-1544966503-7cc5ac882d5f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxiZWVmJTIwc3RlYWt8ZW58MXx8fHwxNzYxMzA3MzQ0fDA&ixlib=rb-4.1.0&q=80&w=1080',
+    supplierId: '3',
+    supplierName: 'Mountain View Ranch',
+    isAvailable: true,
+    stockQuantity: 50,
+    minimumOrderQuantity: 1,
+    tags: ['Grass-fed', 'Premium', 'Local'],
+    createdAt: '2023-03-10T07:30:00Z',
+    updatedAt: '2024-01-25T14:20:00Z',
+  },
+  {
+    id: '4',
+    name: 'Fresh Salmon Fillet',
+    description: 'Wild-caught salmon fillet, perfect for dinner',
+    category: ProductCategory.SEAFOOD,
+    price: 22.5,
+    unit: 'kg',
+    image:
+      'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzYWxtb24lMjBmaWxsZXR8ZW58MXx8fHwxNzYxMzA3MzQ1fDA&ixlib=rb-4.1.0&q=80&w=1080',
+    supplierId: '4',
+    supplierName: 'Coastal Seafood Co.',
+    isAvailable: true,
+    stockQuantity: 30,
+    minimumOrderQuantity: 1,
+    tags: ['Wild-caught', 'Fresh', 'Local'],
+    createdAt: '2023-04-05T06:00:00Z',
+    updatedAt: '2024-01-30T16:10:00Z',
+  },
+  {
+    id: '5',
+    name: 'Sourdough Bread',
+    description: 'Artisan sourdough bread made with local flour',
+    category: ProductCategory.BAKERY,
+    price: 6.99,
+    unit: 'loaf',
+    image:
+      'https://images.unsplash.com/photo-1509440159596-0249088772ff?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzb3VyZG91Z2glMjBicmVhZHx8ZW58MXx8fHwxNzYxMzA3MzQ2fDA&ixlib=rb-4.1.0&q=80&w=1080',
+    supplierId: '5',
+    supplierName: 'Artisan Bakery',
+    isAvailable: true,
+    stockQuantity: 25,
+    minimumOrderQuantity: 2,
+    tags: ['Artisan', 'Local', 'Fresh'],
+    createdAt: '2023-05-12T05:30:00Z',
+    updatedAt: '2024-02-01T09:15:00Z',
+  },
+  {
+    id: '6',
+    name: 'Organic Carrots',
+    description: 'Crisp and sweet organic carrots, perfect for snacking',
+    category: ProductCategory.PRODUCE,
+    price: 2.99,
+    unit: 'kg',
+    image:
+      'https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjYXJyb3RzJTIwb3JnYW5pY3x8ZW58MXx8fHwxNzYxMzA3MzQ3fDA&ixlib=rb-4.1.0&q=80&w=1080',
+    supplierId: '1',
+    supplierName: 'Green Valley Farm',
+    isAvailable: true,
+    stockQuantity: 150,
+    minimumOrderQuantity: 1,
+    tags: ['Organic', 'Local', 'Fresh'],
+    createdAt: '2023-01-15T08:00:00Z',
+    updatedAt: '2024-01-15T10:30:00Z',
+  },
+];
+
+export function getMockProducts(): Product[] {
+  return MOCK_PRODUCTS;
+}
